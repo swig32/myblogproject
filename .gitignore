@@ -1,0 +1,22 @@
+# Django-specific ignores
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+
+# PyCharm / JetBrains ignores
+.idea/
+
+# Environment ignores
+.venv/
+env/
+venv/
+ENV/
+
+# OS ignores
+.DS_Store
+Thumbs.db

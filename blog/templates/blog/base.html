@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}The Red Devil Hub{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        h1, h2, h3, .navbar-brand {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+    </style>
+    <style>
+        :root {
+            --mufc-red: #DA291C; /* Official MUFC Red */
+            --mufc-black: #000000;
+            --mufc-gold: #FBE122;
+        }
+        body { background-color: #f4f4f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        /* Red and Black Navbar */
+        .navbar { background-color: var(--mufc-black); border-bottom: 4px solid var(--mufc-red); }
+        .navbar-brand { font-weight: 900; color: white !important; letter-spacing: 1px; }
+        .navbar-brand span { color: var(--mufc-red); }
+        .nav-link { color: rgba(255,255,255,0.8) !important; }
+        .nav-link:hover { color: var(--mufc-red) !important; }
+
+        /* Card Styling */
+        .card { border-left: 5px solid var(--mufc-red); border-radius: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+        /* --- MUFC OVERRIDES --- */
+        /* Forces standard Bootstrap 'primary' buttons and backgrounds to be Red */
+        .btn-primary, .bg-primary {
+            background-color: var(--mufc-red) !important;
+            border-color: var(--mufc-red) !important;
+            color: white !important;
+        }
+        .btn-primary:hover { background-color: #b11f15 !important; }
+
+        .text-primary { color: var(--mufc-red) !important; }
+        .btn-outline-primary { color: var(--mufc-red); border-color: var(--mufc-red); }
+        .btn-outline-primary:hover { background-color: var(--mufc-red); border-color: var(--mufc-red); color: white; }
+
+        /* Style for breadcrumbs to match theme */
+        .breadcrumb-item a { color: var(--mufc-red); text-decoration: none; }
+
+        .card {
+            transition: all 0.3s ease-in-out;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important; /* Very subtle dark border */
+            border-top: 5px solid var(--mufc-red) !important; /* Keep your signature red top */
+            border-radius: 8px; /* Slightly rounder for a modern look */
+
+            /* Stronger black shadow to make them pop against the stadium */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+            background-color: #ffffff;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            /* Even deeper shadow on hover for a 'lifted' effect */
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        body {
+            /* High-quality stadium image with a subtle dark overlay */
+            background: linear-gradient(rgba(244, 244, 244, 0.60), rgba(244, 244, 244, 0.60)),
+            url('https://images.unsplash.com/photo-1727873275022-d5189075c660?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Main container slightly translucent to show the stadium behind it */
+        .container {
+            border-radius: 15px;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        .hero-banner {
+            background-color: #333; /* Dark fallback */
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Sidebar links turn red when you hover over them */
+        .hover-red:hover {
+            color: var(--mufc-red) !important;
+            transition: 0.3s;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark mb-4 sticky-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'post_list' %}">
+            <img src="https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg" alt="MUFC" width="40" height="40" class="me-2">
+            RED<span>DEVIL</span> HUB
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <span class="badge rounded-pill bg-danger animate-pulse" style="animation: pulse 2s infinite;">
+    NEXT MATCH: VS LIVERPOOL - SUN 16:30
+</span>
+
+        <style>
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.5; }
+                100% { opacity: 1; }
+            }
+        </style>
+
+        <div class="collapse navbar-collapse text-center" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link text-uppercase fw-bold" href="{% url 'post_list' %}">Fan Feed</a>
+                </li>
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link text-uppercase fw-bold" href="{% url 'main' %}">Supporters Club</a>
+                    </li>
+                {% endif %}
+            </ul>
+
+            <ul class="navbar-nav ms-auto align-items-center">
+                {% if user.is_authenticated %}
+                    <li class="nav-item mb-2 mb-lg-0">
+                        <span class="text-white-50 small">Welcome, </span>
+                        <span class="fw-bold text-white text-uppercase">
+                    <i class="bi bi-person-fill text-danger me-1"></i>{{ user.username }}
+                </span>
+                    </li>
+                    <li class="nav-item ms-lg-3">
+                        <a class="btn btn-primary btn-sm fw-bold px-3" href="{% url 'post_create' %}">Write Post</a>
+                        <a class="btn btn-outline-light btn-sm fw-bold px-3 ms-1" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+                    <li class="nav-item"><a class="btn btn-danger btn-sm ms-lg-2 fw-bold" href="{% url 'register' %}">Join the Club</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        </ul>
+        </ul>
+    </div>
+    </div>
+</nav>
+
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<button type="button" class="btn btn-danger btn-floating btn-lg" id="btn-back-to-top"
+        style="position: fixed; bottom: 20px; right: 20px; display: none; z-index: 1000; border-radius: 50%; width: 50px; height: 50px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
+<script>
+    // Get the button
+    let mybutton = document.getElementById("btn-back-to-top");
+
+    // When the user scrolls down 200px from the top, show the button
+    window.onscroll = function () {
+        scrollFunction();
+    };
+
+    function scrollFunction() {
+        if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+            mybutton.style.display = "block";
+        } else {
+            mybutton.style.display = "none";
+        }
+    }
+
+    // When the user clicks on the button, scroll to the top
+    mybutton.addEventListener("click", backToTop);
+
+    function backToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth' // This makes the scroll nice and fluid
+        });
+    }
+</script>
+</body>
+</html>

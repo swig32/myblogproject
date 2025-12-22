@@ -1,0 +1,155 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'post_list' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ post.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 bg-white p-5 rounded shadow-sm">
+
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <h1 class="display-5 fw-bold">{{ post.title }}</h1>
+                {% if user == post.author %}
+                    <div class="btn-group">
+                        <a href="{% url 'post_edit' post.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        <a href="{% url 'post_delete' post.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <p class="text-muted mb-4">
+                By <span class="fw-bold text-dark">{{ post.author.username }}</span>
+                on {{ post.date_posted|date:"F d, Y \a\t H:i" }}
+            </p>
+
+            <hr class="mb-4">
+
+            {% if post.media %}
+                <div class="mb-4 text-center">
+                    {% if post.media.url|lower|slice:"-4:" == ".mp4" or post.media.url|lower|slice:"-4:" == ".mov" %}
+                        <video width="100%" height="auto" controls class="rounded shadow">
+                            <source src="{{ post.media.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% else %}
+                        <img src="{{ post.media.url }}" class="img-fluid rounded shadow" alt="{{ post.title }}">
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div class="post-content mb-5" style="line-height: 1.8; font-size: 1.1rem;">
+                {{ post.body|linebreaks }}
+            </div>
+
+            <div class="mb-4">
+                <form action="{% url 'like_post' post.pk %}" method="POST">
+                    {% csrf_token %}
+
+                    {% if user.is_authenticated %}
+                        {% if user in post.likes.all %}
+                            <button type="submit" name="post_id" value="{{ post.id }}" class="btn btn-danger shadow-sm">
+                                <i class="bi bi-heart-fill"></i> Unlike ({{ post.total_likes }})
+                            </button>
+                        {% else %}
+                            <button type="submit" name="post_id" value="{{ post.id }}" class="btn btn-outline-danger shadow-sm">
+                                <i class="bi bi-heart"></i> Like ({{ post.total_likes }})
+                            </button>
+                        {% endif %}
+                    {% else %}
+                        <small><a href="{% url 'login' %}">Login</a> to like this post!</small>
+                        <span class="badge bg-secondary ms-2">{{ post.total_likes }} Likes</span>
+                    {% endif %}
+                </form>
+            </div>
+
+            <div class="mb-5">
+                <a href="{% url 'post_list' %}" class="btn btn-secondary shadow-sm">
+                    &larr; Back to Blog Feed
+                </a>
+            </div>
+
+            <section class="mt-5 pt-4 border-top">
+                <h4 class="mb-4">Comments ({{ comments.count }})</h4>
+
+                {% for comment in comments %}
+                    <div class="card mb-3 border-0 bg-light">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                {% if comment.author.member.profile_pic %}
+                                    <img src="{{ comment.author.member.profile_pic.url }}"
+                                         class="rounded-circle me-2"
+                                         style="width: 40px; height: 40px; object-fit: cover;"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+
+                                    <div class="rounded-circle bg-secondary me-2 text-white d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; font-size: 1.2rem; display: none;">
+                                        {{ comment.author.username|slice:":1"|upper }}
+                                    </div>
+                                {% else %}
+                                    <div class="rounded-circle bg-secondary me-2 text-white d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; font-size: 1.2rem;">
+                                        {{ comment.author.username|slice:":1"|upper }}
+                                    </div>
+                                {% endif %}
+
+                                <span class="fw-bold">{{ comment.author.username }}</span>
+                                <small class="text-muted ms-auto">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+
+                            </div>
+
+                            <p class="mb-2 ms-5">{{ comment.text }}</p>
+
+                            {% if comment.media %}
+                                <div class="ms-5 mt-2">
+                                    {% if comment.media.url|lower|slice:"-4:" == ".mp4" or comment.media.url|lower|slice:"-4:" == ".mov" %}
+                                        <video width="250" height="auto" controls class="rounded shadow-sm">
+                                            <source src="{{ comment.media.url }}" type="video/mp4">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    {% else %}
+                                        <img src="{{ comment.media.url }}" class="img-fluid rounded shadow-sm border" style="max-width: 250px;" alt="Comment media">
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted italic">No comments yet. Be the first to join the conversation!</p>
+                {% endfor %}
+
+                <div class="mt-5">
+                    <h5 class="mb-3">Leave a comment</h5>
+
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'add_comment' post.pk %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <textarea class="form-control" name="text" rows="3" placeholder="Write your thoughts here..." required></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Attach Photo or Video</label>
+                                <input type="file" name="media" class="form-control form-control-sm">
+                            </div>
+
+                            <button class="btn btn-primary" type="submit">Post Comment</button>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-info py-2">
+                            Please <a href="{% url 'login' %}">login</a> to leave a comment.
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+        </div>
+    </div>
+{% endblock %}

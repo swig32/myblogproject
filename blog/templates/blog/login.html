@@ -1,0 +1,63 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-5 col-lg-4">
+
+        <div class="card shadow-lg border-0 rounded-3 overflow-hidden">
+
+            <div class="card-header border-0 text-white text-center py-4"
+                 style="background-color: #DA291C;">
+                <h3 class="fw-bold mb-0 text-uppercase">Member Login</h3>
+                <small class="text-white-50">Enter the Theater of Dreams</small>
+            </div>
+
+            <div class="card-body p-4 p-md-5 bg-white">
+                <form method="POST">
+                    {% csrf_token %}
+
+                    {% if error %}
+                        <div class="alert alert-danger small py-2 mb-3">
+                            <i class="bi bi-exclamation-circle-fill"></i> {{ error }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted">
+                                <i class="bi bi-person-fill"></i>
+                            </span>
+                            <input type="text" name="username" class="form-control border-start-0 ps-0 shadow-none" placeholder="Username" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted">
+                                <i class="bi bi-lock-fill"></i>
+                            </span>
+                            <input type="password" name="password" class="form-control border-start-0 ps-0 shadow-none" placeholder="Password" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-danger btn-lg fw-bold shadow-sm" style="background-color: #DA291C; border: none;">
+                            LOGIN
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card-footer bg-light text-center py-3 border-top">
+                <p class="mb-0 small text-muted">
+                    Not a member?
+                    <a href="{% url 'register' %}" class="text-danger fw-bold text-decoration-none">Join the Club</a>
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

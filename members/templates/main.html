@@ -1,0 +1,44 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-10 col-lg-8">
+        <div class="p-5 text-center text-white rounded-4 shadow-lg glass-panel">
+            <h1 class="display-3 fw-bold mb-3 mt-2" style="text-shadow: 3px 3px 10px rgba(0,0,0,0.8); letter-spacing: 2px;">
+                OLD TRAFFORD SUPPORTERS CLUB
+            </h1>
+
+            <div class="mx-auto mb-4" style="width: 80px; height: 4px; background-color: var(--mufc-red);"></div>
+
+            <p class="fs-4 fw-light mb-5 px-md-5" style="text-shadow: 2px 2px 5px rgba(0,0,0,0.7); line-height: 1.6;">
+                The official community for Red Devils fans. Connect with fellow supporters
+                from around the world and share your passion for the greatest club in the world.
+            </p>
+
+            <div class="d-grid gap-3 d-sm-flex justify-content-sm-center mb-2">
+                <a href="{% url 'members' %}" class="btn btn-primary btn-lg px-5 py-3 fw-bold text-uppercase shadow"
+                   style="letter-spacing: 1px; transition: 0.3s;">
+                    Browse Fan Directory
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* This creates the see-through frosted glass effect */
+    .glass-panel {
+        background: rgba(0, 0, 0, 0.65); /* Dark semi-transparent */
+        backdrop-filter: blur(8px);      /* Blurs the stadium photo behind it */
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 5px solid var(--mufc-red);
+    }
+
+    /* Hover effect for the button */
+    .btn-primary:hover {
+        transform: scale(1.05);
+        background-color: #b11f15 !important;
+    }
+</style>
+{% endblock %}

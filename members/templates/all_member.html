@@ -1,0 +1,44 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+    <div class="container mt-4">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h2 class="mb-0">Supporters Directory</h2>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{% url 'members' %}" class="mb-4">
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" placeholder="Search by name..." value="{{ request.GET.q }}">
+                        <button class="btn btn-danger" type="submit">Search</button>
+                        {% if request.GET.q %}
+                            <a href="{% url 'members' %}" class="btn btn-outline-secondary">Clear</a>
+                        {% endif %}
+                    </div>
+                </form>
+                <table class="table table-hover">
+                    <thead class="table-danger">
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Phone Number</th>
+                        <th>Details</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for x in mymembers %}
+                        <tr>
+                            <td>{{ x.firstname }}</td>
+                            <td>{{ x.lastname }}</td>
+                            <td>{{ x.phone_number|default:"--" }}</td>
+                            <td>
+                                <a href="{% url 'details' x.id %}" class="btn btn-sm btn-outline-danger">View Profile</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
