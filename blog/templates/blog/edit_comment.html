@@ -14,28 +14,31 @@
             </div>
 
             <div class="mb-4">
-                <label class="form-label fw-bold">Current Media</label>
+                <label class="form-label fw-bold">Media Attachment</label>
                 {% if comment.media %}
                     <div class="mb-2">
                         {% if comment.media.url|lower|slice:"-4:" == ".mp4" or comment.media.url|lower|slice:"-4:" == ".mov" %}
-                            <video width="200" controls class="rounded border">
-                                <source src="{{ comment.media.url }}" type="video/mp4">
-                            </video>
+                            <video width="200" controls class="rounded border"><source src="{{ comment.media.url }}" type="video/mp4"></video>
                         {% else %}
                             <img src="{{ comment.media.url }}" class="img-fluid rounded border" style="max-width: 200px;">
                         {% endif %}
                     </div>
-                {% else %}
-                    <p class="text-muted small">No media attached to this comment.</p>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="clear_media" id="clearMedia">
+                        <label class="form-check-label text-danger fw-bold" for="clearMedia">
+                            Remove current photo/video
+                        </label>
+                    </div>
                 {% endif %}
 
-                <label class="form-label small text-uppercase text-muted d-block mt-2">Change Photo or Video</label>
+                <label class="form-label small text-uppercase text-muted d-block">Upload New Media (Replaces old)</label>
                 <input type="file" name="media" class="form-control form-control-sm">
             </div>
 
             <div class="d-flex justify-content-between">
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-                <a href="{% url 'post_detail' comment.post.pk %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary shadow-sm">Save Changes</button>
+                <a href="{% url 'post_detail' comment.post.pk %}" class="btn btn-secondary shadow-sm">Cancel</a>
             </div>
         </form>
     </div>

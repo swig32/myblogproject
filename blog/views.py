@@ -178,18 +178,20 @@ def like_comment(request, pk):
 def edit_comment(request, pk):
     comment = get_object_or_404(Comment, pk=pk)
 
-    # Security check: only the author can edit
     if comment.author != request.user:
         return HttpResponseForbidden("You cannot edit someone else's comment!")
 
     if request.method == 'POST':
-        # Update the text
         comment.text = request.POST.get('text')
 
-        # Check if a new media file was uploaded
-        new_media = request.FILES.get('media')
-        if new_media:
-            comment.media = new_media
+        # Check if "Remove Media" checkbox was ticked
+        if request.POST.get('clear_media'):
+            comment.media = None
+        else:
+            # Otherwise, check if a new file was uploaded to replace the old one
+            new_media = request.FILES.get('media')
+            if new_media:
+                comment.media = new_media
 
         comment.save()
         return redirect('post_detail', pk=comment.post.pk)
