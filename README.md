@@ -1,6 +1,6 @@
 # Red Devil Hub - Django Blog Application
 
-A Manchester United-themed blog and community platform built with Django 6.0. This application allows fans to create posts, comment on content, interact through likes, and connect with other supporters through a members directory.
+A Manchester United-themed blog and community platform built with Django 6.0. This application allows fans to create posts, comment on content, interact through likes (on both posts and comments), edit comments, and connect with other supporters through a members directory.
 
 ## Table of Contents
 
@@ -22,11 +22,19 @@ A Manchester United-themed blog and community platform built with Django 6.0. Th
 ### Core Functionality
 - **User Registration & Authentication**: Custom registration with automatic member profile creation
 - **Blog Posts**: Create, read, update, and delete blog posts with media upload support
-- **Comments**: Add comments to posts with optional media attachments
-- **Like System**: Users can like/unlike posts
+- **Comments**: Add, edit, and delete comments on posts with optional media attachments
+- **Like System**: Users can like/unlike both posts AND comments
 - **Members Directory**: Browse and search registered supporters
 - **Profile Management**: View member profiles with contact information
 - **Responsive Design**: Manchester United-themed UI with Bootstrap 5
+
+### New Features Added
+- **Comment Likes**: Each comment can now be liked/unliked independently with visual feedback
+- **Comment Editing**: Authors can edit their comments after posting with advanced media management
+- **Media Management in Edit**: Option to remove existing media or replace it with new media
+- **Profile Picture Display**: Comments now show user profile pictures or default avatars
+- **Enhanced Comment UI**: Displays like counts, edit/delete buttons for comment authors, and inline actions
+- **Improved Comment Management**: Better visual feedback and inline editing options
 
 ### Security Features
 - CSRF protection on all forms
@@ -67,14 +75,15 @@ myblogproject/
 │   │       ├── login.html        # Login page
 │   │       ├── register.html     # Registration page
 │   │       ├── post_list.html    # Homepage with all posts
-│   │       ├── post_detail.html  # Individual post view
+│   │       ├── post_detail.html  # Individual post view with comments
 │   │       ├── post_form.html    # Create/edit post form
 │   │       ├── post_edit.html    # Edit post template
+│   │       ├── edit_comment.html # Edit comment form with media management
 │   │       └── post_confirm_delete.html
 │   ├── __init__.py
 │   ├── admin.py                  # Admin configuration for Post/Comment
 │   ├── apps.py
-│   ├── context_processors.py     # Custom context processor
+│   ├── context_processors.py     # Custom context processor for member stats
 │   ├── forms.py                  # PostForm for creating/editing posts
 │   ├── models.py                 # Post and Comment models
 │   ├── views.py                  # All blog views
@@ -241,6 +250,8 @@ def post_create(request):
 - `post_edit` - Editing posts
 - `post_delete` - Deleting posts
 - `comment_delete` - Deleting comments
+- `like_comment` - Liking comments
+- `edit_comment` - Editing comments
 - `update_profile` - Updating profile pictures
 
 ### Authorization (Ownership Checks)
@@ -292,7 +303,7 @@ class Post(models.Model):
 - Has many comments (reverse relationship)
 
 #### 2. Comment Model
-Represents comments on blog posts.
+Represents comments on blog posts with like functionality.
 
 ```python
 class Comment(models.Model):
@@ -301,6 +312,7 @@ class Comment(models.Model):
     text = models.TextField()
     media = models.FileField(upload_to='comment_media/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    likes = models.ManyToManyField(User, related_name='comment_likes', blank=True)
 ```
 
 **Fields**:
@@ -309,10 +321,15 @@ class Comment(models.Model):
 - `text`: Comment content
 - `media`: Optional image or video attachment
 - `created_at`: Timestamp of comment creation
+- `likes`: Many-to-many relationship with Users who liked the comment
+
+**Methods**:
+- `total_likes()`: Returns the count of users who liked the comment
 
 **Relationships**:
 - Each comment belongs to one post
 - Each comment has one author
+- Many users can like a comment
 - When a post is deleted, all its comments are deleted (CASCADE)
 
 ### Members App Models (`members/models.py`)
@@ -367,10 +384,15 @@ User (Django built-in)
   |-- ForeignKey (author) --> Post
   |                            |
   |                            |-- ForeignKey --> Comment
+  |                            |                  |
+  |                            |                  |-- ManyToMany (likes) --> User
   |                            |
   |                            |-- ManyToMany (likes) --> User
   |
   |-- ForeignKey (author) --> Comment
+  |
+  |-- ManyToMany (comment_likes) --> Comment
+  |-- ManyToMany (blog_posts) --> Post
 ```
 
 ---
@@ -425,7 +447,11 @@ urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 ```
 
-**Usage**: Icons for UI elements (user profile, arrows, hearts for likes, etc.)
+**Usage**: Icons throughout the UI including:
+- User profile icons
+- Heart icons for likes (filled/unfilled states)
+- Edit (pencil) and delete (trash) icons
+- Navigation arrows
 
 ### 4. Google Fonts
 **Purpose**: Custom typography
@@ -465,6 +491,34 @@ urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 - **Comment**: Scroll to the comments section, write your comment, optionally attach media
 - **Edit/Delete**: Only available if you're the post author (buttons appear on post detail page)
 
+#### Working with Comments
+
+##### Adding Comments
+1. Navigate to a post detail page
+2. Scroll to the "Leave a comment" section
+3. Write your comment in the text area
+4. Optionally attach a photo or video
+5. Click "Post Comment"
+
+##### Liking Comments
+- Click the heart icon next to any comment
+- The icon fills in when liked, and shows the like count
+- Click again to unlike
+
+##### Editing Comments
+1. Find your own comment (edit icon only appears for your comments)
+2. Click the pencil/edit icon (🖊️)
+3. Modify the comment text in the text area
+4. **Media Options**:
+   - Check "Remove current photo/video" to delete existing media
+   - Upload a new file to replace the current media
+   - Leave both options unchanged to keep existing media
+5. Click "Save Changes" or "Cancel" to return without changes
+
+##### Deleting Comments
+1. Click the trash icon next to your comment
+2. Confirm the deletion when prompted
+
 #### Browsing Members
 1. Click "Supporters Club" in the navbar
 2. Use the search bar to find specific members
@@ -500,8 +554,8 @@ urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 ### Registered Models
 
 #### Blog App
-- **Posts**: View, edit, delete all posts
-- **Comments**: Manage all comments
+- **Posts**: View, edit, delete all posts with like counts
+- **Comments**: Manage all comments with like counts
 
 #### Members App
 - **Members**: Custom admin display showing:
@@ -518,6 +572,7 @@ class MemberAdmin(admin.ModelAdmin):
 
 ### Admin Capabilities
 - Create, read, update, delete operations on all models
+- View and manage comment likes
 - Bulk actions (delete multiple items)
 - Search and filter functionality
 - User and group management
@@ -575,6 +630,8 @@ The templates automatically detect file type and render appropriately:
 | `/posts/<int:pk>/delete/` | `post_delete` | `post_delete` | Delete post |
 | `/like/<int:pk>` | `like_post` | `like_post` | Like/unlike post |
 | `/comment/<int:pk>/delete/` | `comment_delete` | `comment_delete` | Delete comment |
+| `/comment/<int:pk>/like/` | `like_comment` | `like_comment` | Like/unlike comment |
+| `/comment/<int:pk>/edit/` | `edit_comment` | `edit_comment` | Edit comment |
 
 ### Members App URLs (`/members/`)
 
@@ -587,7 +644,81 @@ The templates automatically detect file type and render appropriately:
 
 ---
 
-## Development Notes
+## Key Features Explained
+
+### Comment Like System
+
+The comment like system works similarly to post likes but is independent:
+
+**View Function** (`blog/views.py`):
+```python
+@login_required
+def like_comment(request, pk):
+    comment = get_object_or_404(Comment, id=pk)
+    if comment.likes.filter(id=request.user.id).exists():
+        comment.likes.remove(request.user)  # Unlike
+    else:
+        comment.likes.add(request.user)  # Like
+    return redirect('post_detail', pk=comment.post.pk)
+```
+
+**Template Implementation** (`post_detail.html`):
+- Shows filled heart icon if user has liked the comment
+- Displays like count next to the heart
+- Form-based implementation using POST requests
+- Shows user profile pictures or avatar initials next to comments
+- Edit and delete icons appear inline for comment authors
+- Confirm dialog on delete to prevent accidental deletions
+
+### Comment Editing
+
+Comments can be edited by their authors after posting with advanced media management:
+
+**View Function** (`blog/views.py`):
+```python
+@login_required
+def edit_comment(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+
+    if comment.author != request.user:
+        return HttpResponseForbidden("You cannot edit someone else's comment!")
+
+    if request.method == 'POST':
+        comment.text = request.POST.get('text')
+
+        # Check if "Remove Media" checkbox was ticked
+        if request.POST.get('clear_media'):
+            comment.media = None
+        else:
+            # Otherwise, check if a new file was uploaded to replace the old one
+            new_media = request.FILES.get('media')
+            if new_media:
+                comment.media = new_media
+
+        comment.save()
+        return redirect('post_detail', pk=comment.post.pk)
+
+    return render(request, 'blog/edit_comment.html', {'comment': comment})
+```
+
+**Features**:
+- Only the comment author sees the edit button
+- Can update both text and media
+- **Media Management Options**:
+  - **Remove existing media**: Checkbox to delete current photo/video
+  - **Replace media**: Upload new file to replace the old one
+  - **Keep existing media**: Leave both checkbox unchecked and don't upload new file
+- Shows preview of current media in edit form
+- Security check ensures only the author can edit
+- Returns to the post detail page after editing
+
+**Edit Comment Template** (`blog/edit_comment.html`):
+The edit form provides a user-friendly interface with:
+- Text area pre-filled with current comment text
+- Visual preview of existing media (image or video)
+- Checkbox option to remove current media
+- File upload input to replace media
+- Cancel button to return without changes
 
 ### Custom Context Processor (`blog/context_processors.py`)
 The project uses a custom context processor to make member statistics available globally across all templates.
@@ -641,7 +772,7 @@ The project uses Django's signal system to automatically create Member profiles:
 
 ### Template Inheritance
 All templates extend `blog/base.html` which includes:
-- Navigation bar
+- Navigation bar with dynamic user state
 - Footer
 - Manchester United theme styling
 - Bootstrap and custom CSS
@@ -656,6 +787,8 @@ The project uses Django's ModelForm for simplified form handling:
 
 ## Future Enhancement Ideas
 
+- AJAX-based likes for smoother UX (no page reload)
+- Nested comment replies (threaded comments)
 - Email verification on registration
 - Password reset functionality
 - User profile editing (beyond profile pictures)
@@ -665,7 +798,10 @@ The project uses Django's ModelForm for simplified form handling:
 - Real-time notifications
 - API endpoints for mobile app integration
 - Multiple image uploads per post
-- Comment likes/replies (nested comments)
+- Comment reaction types (beyond just likes)
+- Markdown support in post/comment bodies
+- User following system
+- Direct messaging between members
 
 ---
 
@@ -693,6 +829,16 @@ python manage.py collectstatic
 - Ensure the user running Django has write access to the media directory
 - Check file permissions: `chmod 755 media/`
 
+**5. Comment likes not working**
+- Ensure you're logged in
+- Check that the URL pattern for `like_comment` is registered
+- Verify the Comment model has the `likes` field with proper ManyToMany relationship
+
+**6. Edit comment button not appearing**
+- Verify you're the comment author
+- Check that `user == comment.author` in the template
+- Ensure you're logged in
+
 ---
 
 ## Contributing
@@ -700,7 +846,7 @@ python manage.py collectstatic
 To contribute to this project:
 1. Create a new branch for your feature
 2. Make your changes
-3. Test thoroughly
+3. Test thoroughly (especially likes and edit functionality)
 4. Submit a pull request with a clear description
 
 ---
