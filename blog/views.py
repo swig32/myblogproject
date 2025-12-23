@@ -162,3 +162,36 @@ def comment_delete(request, pk):
     post_pk = comment.post.pk
     comment.delete()
     return redirect('post_detail', pk=post_pk)
+
+
+@login_required
+def like_comment(request, pk):
+    comment = get_object_or_404(Comment, id=pk)
+    if comment.likes.filter(id=request.user.id).exists():
+        comment.likes.remove(request.user)  # Unlike if already liked
+    else:
+        comment.likes.add(request.user)  # Like
+    return redirect('post_detail', pk=comment.post.pk)
+
+
+@login_required
+def edit_comment(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+
+    # Security check: only the author can edit
+    if comment.author != request.user:
+        return HttpResponseForbidden("You cannot edit someone else's comment!")
+
+    if request.method == 'POST':
+        # Update the text
+        comment.text = request.POST.get('text')
+
+        # Check if a new media file was uploaded
+        new_media = request.FILES.get('media')
+        if new_media:
+            comment.media = new_media
+
+        comment.save()
+        return redirect('post_detail', pk=comment.post.pk)
+
+    return render(request, 'blog/edit_comment.html', {'comment': comment})

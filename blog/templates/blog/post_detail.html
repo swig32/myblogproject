@@ -79,26 +79,37 @@
                     <div class="card mb-3 border-0 bg-light">
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-2">
-                                {% if comment.author.member.profile_pic %}
-                                    <img src="{{ comment.author.member.profile_pic.url }}"
-                                         class="rounded-circle me-2"
-                                         style="width: 40px; height: 40px; object-fit: cover;"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-
-                                    <div class="rounded-circle bg-secondary me-2 text-white d-flex align-items-center justify-content-center"
-                                         style="width: 40px; height: 40px; font-size: 1.2rem; display: none;">
-                                        {{ comment.author.username|slice:":1"|upper }}
-                                    </div>
-                                {% else %}
-                                    <div class="rounded-circle bg-secondary me-2 text-white d-flex align-items-center justify-content-center"
-                                         style="width: 40px; height: 40px; font-size: 1.2rem;">
-                                        {{ comment.author.username|slice:":1"|upper }}
-                                    </div>
-                                {% endif %}
-
                                 <span class="fw-bold">{{ comment.author.username }}</span>
-                                <small class="text-muted ms-auto">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
 
+                                <div class="ms-auto d-flex align-items-center">
+                                    <small class="text-muted me-3">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+
+                                    <form action="{% url 'like_comment' comment.pk %}" method="POST" class="me-2">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm p-0 border-0">
+                                            {% if user in comment.likes.all %}
+                                                <i class="bi bi-heart-fill text-danger"></i>
+                                            {% else %}
+                                                <i class="bi bi-heart text-danger"></i>
+                                            {% endif %}
+                                            <small class="text-dark">{{ comment.total_likes }}</small>
+                                        </button>
+                                    </form>
+
+                                    {% if user == comment.author %}
+                                        <a href="{% url 'edit_comment' comment.pk %}" class="text-secondary me-2">
+                                            <i class="bi bi-pencil-square" style="font-size: 0.9rem;"></i>
+                                        </a>
+
+                                        <form action="{% url 'comment_delete' comment.pk %}" method="POST">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-link text-danger p-0 border-0"
+                                                    onclick="return confirm('Delete this comment?')">
+                                                <i class="bi bi-trash-fill" style="font-size: 0.8rem;"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
                             </div>
 
                             <p class="mb-2 ms-5">{{ comment.text }}</p>

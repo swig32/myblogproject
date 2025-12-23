@@ -25,6 +25,11 @@ class Comment(models.Model):
     media = models.FileField(upload_to='comment_media/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    likes = models.ManyToManyField(User, related_name='comment_likes', blank=True)
+
+    def total_likes(self):
+        return self.likes.count()
+
     def __str__(self):
         return f'Comment by {self.author.username} on {self.post.title}'
 
