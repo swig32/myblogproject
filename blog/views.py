@@ -8,7 +8,6 @@ from .forms import PostForm  # <--- FIX 1: Added this missing import
 from members.models import Member
 
 def post_list(request):
-    # FIX 2: Changed 'created_at' to 'date_posted'
     posts = Post.objects.all().order_by('-date_posted')
 
     latest_members = Member.objects.all().order_by('-joined_date')[:5]
@@ -32,9 +31,7 @@ def like_post(request, pk):
 
 def post_detail(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    # FIX 3: Changed 'created_at' to 'date_posted' (or whatever your comment date field is)
-    # If your Comment model still uses 'created_at', leave it.
-    # But for Post, we must use 'date_posted'.
+
     comments = post.comments.all().order_by('-created_at')
     return render(request, 'blog/post_detail.html', {'post': post, 'comments': comments})
 
@@ -122,7 +119,7 @@ def add_comment(request, pk):
 def post_edit(request, pk):
     post = get_object_or_404(Post, pk=pk)
 
-    # Security: Ensure only the author can edit
+    # This will ensure only the author can edit
     if post.author != request.user:
         return HttpResponseForbidden('You are not allowed to edit this post!')
 

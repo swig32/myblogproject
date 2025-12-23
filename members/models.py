@@ -10,7 +10,7 @@ class Member(models.Model):
     lastname = models.CharField(max_length=255)
     profile_pic = models.ImageField(upload_to='profile_pics/', default='profile_pics/default_avatar.png', blank=True,null=True)
     emailaddress = models.CharField(max_length=255)
-    phone_number = models.CharField(max_length=20, null=True, blank=True) # Changed to CharField for better phone formatting
+    phone_number = models.CharField(max_length=20, null=True, blank=True) # CharField for better phone formatting
     joined_date = models.DateField(auto_now_add=True, null=True) # Automatically sets date when they join
 
     def __str__(self):
